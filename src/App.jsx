@@ -1,12 +1,17 @@
-import { useState,useRef,useEffect } from 'react'
+import { useState, useRef, useEffect ,forwardRef} from 'react'
 import './App.css'
+import MenuCard from './MenuCard.jsx'
+import DetailedCard from './DetailedCard.jsx';
+import Logo from './Logo.jsx';
+import card_mapper from './data/card_mapper';
+import AudioPlayer from './AudioPlayer';
 const useOutsideClick = (callback) => {
   const ref = useRef();
 
   useEffect(() => {
     const handleClick = (event) => {
       if (ref.current && !ref.current.contains(event.target)) {
-      callback();
+        callback();
       }
     };
 
@@ -19,26 +24,106 @@ const useOutsideClick = (callback) => {
 
   return ref;
 };
-function App() {
-  const [selectedCard,setSelectedCard] = useState(null)
-  const card_mapper = {
-    "para-medic": {name:"Para-Medic", questions:["Ask about Movies", "Ask about Plants", "Ask about Animals"]},
-    "sigint":{name:"Sigint",questions:["Ask about ..."]},
-    "the-boss":{name:"The Boss", questions:["Ask about..."]}
-  }
-  const ref = useOutsideClick(()=>setSelectedCard(null));
-  //detect outside click ? 
-  return (
-    <div className="App">
-      <div className='parent'>
-        <div className="image-container"><img src={"src/img/Metal_Gear_Solid_logo_black.svg.png"} alt="logo"/></div>
-        <div className='calling-cards' ref={ref}>
-          {["para-medic","the-boss","sigint"].map((name)=><div className="calling-card" onClick={()=>setSelectedCard(name)}>{card_mapper[name].name}</div>)}
-        </div>
-        {selectedCard && card_mapper[selectedCard]? <div>{`List of ${card_mapper[selectedCard].name} Questions`}</div>:null}
-      </div>
+
+
+const AudioWaves = forwardRef((props, ref) => (
+    <div>
+      <canvas ref={ref} width={500} height={200} />
     </div>
-  )
-}
+));
+function App() {
+    const [selectedCard, setSelectedCard] = useState(null)
+    const [selectedQuestion, setSelectedQuestion] = useState("");
+    const [selectedTopic, setSelectedTopic] = useState(null)
+    const [isPlaying, setIsPlaying] = useState(false);
+    const ref = useOutsideClick(() => {
+      console.log('handle outside click')
+      setSelectedCard(null)
+      setSelectedQuestion("")
+      setSelectedTopic(null)
+      setIsPlaying(false)
+
+    });
+    const audioElmRef = useRef(null);   //ref for audio
+    const source = useRef();
+    const canvasRef = useRef();
+    const analyzer = useRef()
+    const [animationFrameValue, setAnimationFrameValue] = useState(null)
+    //detect outside click ? 
+    const handleMenuCardClick = (cardName) => {
+      console.log(cardName)
+      setSelectedCard(cardName)
+      setSelectedQuestion(card_mapper[cardName].questions[0])
+    }
+    const handleQuestionChange = (event) => {
+      setSelectedQuestion(event.target.value)
+    }
+
+    const handleSelectedTopicChange = (topic) => {
+      setSelectedTopic(topic)
+      setIsPlaying(false)
+    }
+
+    const visualizeData = () => {
+      setAnimationFrameValue(window.requestAnimationFrame(visualizeData))//requestAnimationFrame returns a long int value
+      if (audioElmRef.current.paused) {
+        return cancelAnimationFrame(animationFrameValue);
+      }
+      const audioData = new Uint8Array(140)
+      analyzer.current.getByteFrequencyData(audioData);
+      const bar_width = 3;
+      let start = 0
+      const ctx = canvasRef.current.getContext("2d");
+      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+      for (let i = 0; i < audioData.length; i++) {
+        start = i * 4 //compute x coordinate where we would draw
+        //create a gradient for the whole canvas
+        let gradient = ctx.createLinearGradient(0, 0, canvasRef.current.width, canvasRef.current.height)
+        gradient.addColorStop(0.2, "#4c4c37")  //lighter
+        gradient.addColorStop(0.5, "#2c2c14") //medium
+        gradient.addColorStop(1.0, "#242c1c"); //darkest
+        ctx.fillStyle = gradient;
+        ctx.fillRect(start, canvasRef.current.height, bar_width, -audioData[i]);
+      }
+    }
+
+    const handleAudioPlay = () => {
+      let audioContext = new AudioContext()
+      if (!source.current) {
+        source.current = audioContext.createMediaElementSource(audioElmRef.current)
+        analyzer.current = audioContext.createAnalyser()
+        source.current.connect(analyzer.current)
+        analyzer.current.connect(audioContext.destination)
+      }
+      visualizeData();
+    }
+
+    return (
+      <div className="App">
+        <div className='parent' ref={ref}>
+          <Logo />
+          <div className='card-container' >
+            {Object.keys(card_mapper).map((name) => <MenuCard
+              key={name}
+              cardDetails={card_mapper[name]}
+              onCardSelect={() => handleMenuCardClick(name)}
+              name={card_mapper[name].name}
+            />)}
+          </div>
+          {selectedCard && card_mapper[selectedCard] ? <DetailedCard
+            selectedCard={selectedCard}
+            name={card_mapper[selectedCard].name}
+            questions={card_mapper[selectedCard].questions}
+            selectedQuestion={selectedQuestion}
+            handleQuestionChange={handleQuestionChange}
+            handleSelectedTopicChange={handleSelectedTopicChange}
+          /> : null}
+          <AudioPlayer src={selectedTopic && selectedTopic.file ? selectedTopic.file:""} ref={audioElmRef} autoPlay={isPlaying} onPlay={handleAudioPlay}/>
+          <AudioWaves ref={canvasRef}/>
+        </div>
+      </div>
+    )
+  }
 
 export default App

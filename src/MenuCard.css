@@ -1,0 +1,14 @@
+.menu-card {
+    padding: 2em;
+    border-radius:2rem;
+    background-color: #21231a;
+    margin: 2em;
+    color:white;
+  }
+
+  .card .menu-card-name{
+    padding:1em;
+  }
+  .card img{
+    display:block;
+  }

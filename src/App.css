@@ -3,6 +3,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+
 }
 
 .logo {
@@ -33,9 +34,7 @@
   }
 }
 
-.card {
-  padding: 2em;
-}
+
 
 .calling-cards{
   display:flex;
@@ -46,6 +45,28 @@
   border:1px solid black;
 }
 
-.image-container img{
-  max-width: 10rem;
+
+.card-container {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 3rem;
+  
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #21231a;
+  padding: 20px;
 }

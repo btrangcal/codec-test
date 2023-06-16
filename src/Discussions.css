@@ -1,0 +1,13 @@
+    .discussions-container{
+        display:flex;
+        justify-content: center;
+    }
+    ul{
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    li
+    {padding:1em; border:1px solid black; margin:2em; border-radius:5px; background-color: #5c5c44;}
