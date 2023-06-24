@@ -4,9 +4,12 @@
     background-color: #21231a;
     border-radius: 4px;
     padding:3rem;
-    margin-right: 16px;
     flex: 1;
     color:white;
-    margin-bottom:3em;
+    max-width:50%;
+    margin:auto;
+    max-height:250px;
+    width:500px;
+    overflow-y:scroll;
   }
   

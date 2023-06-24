@@ -70,3 +70,9 @@
   background-color: #21231a;
   padding: 20px;
 }
+
+.audio-container{
+  display: flex;
+  margin-top:3rem;
+
+}
